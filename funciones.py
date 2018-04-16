@@ -1,6 +1,5 @@
 from __future__ import division
 import numpy as np
-import scipy.signal as signal
 import matplotlib.pyplot as plt
 import scipy.fftpack as fftpack
 import ipdb
@@ -13,7 +12,7 @@ N = 50000
 DM_index = 2.0
 frec_i = 1.5   # ojo q si f_i y f_fin no son floats no funca
 frec_fin = 1.2
-width_i = 0.5
+width_i = 0.03
 width_fin = 3
 index_width = 4
 
@@ -31,11 +30,11 @@ def chirp(duracion, N, DM_index, frec_i, frec_fin, desfase):
     phi = 2*np.pi*np.cumsum(frec*duracion/N)
     # plt.plot(1/(2*np.pi)*np.gradient(phi, duracion/N)) # mustra la variacion de frec
     # del chirp
-    x = np.sin(phi+desfase*t)
+    x = np.sin(phi + desfase*t)
     return (a, b, t, x)
 
 
-def evol_width(a, b, width_i, width_f, t, index_width):
+def evol_width(a, b, width_i, width_f, index_width):
     """Entrega distintos valores de width dependiendo del tiempo que se le
     ingrese. Usa que w = c((a/(t-b))**(1/DM_ind))**index_wifth + d
      Antes de usar esta funcion se debe haber sacado a,b de la
@@ -50,20 +49,70 @@ def evol_width(a, b, width_i, width_f, t, index_width):
 
 
 prueba = chirp(duracion, N, DM_index, frec_i, frec_fin, 0)
-t = prueba[2]
-x = prueba[3]
 a = prueba[0]
 b = prueba[1]
+t = prueba[2]
+x = prueba[3]
 f_sample = (t[2]-t[1])**-1
 
 
+ancho = evol_width(a, b, width_i, width_fin, index_width)
+
+"""Testing de la evolucion del ancho (dps hay q convertirlo en una funcion)
+La idea es concatenar chirps desfasados talque cumplan los requerimientos del
+ancho, esto depende fuertemente de la velocidad de adquisiscion del ADC
+y esta dado por el delta_t con que se esta trabajando en el script...(OJO PIOJO
+que sino puede darse que el ADC cache que hay zonas espaciadas y no lo mida como
+continuo)...Importante: los coeficientes q acompañan a los chirps estan sacados
+de una distribucion gaussiana centrada en el peak y con
+sigma= ancho/(2sqrt(2ln(2)))
+"""
+# Para plot_frec(x,t,0,'asd')  w=0.021 aprox, y delta_f=0.015
+
+
+
+delta_t = duracion*1.0/N
+cant_chirp_anterior = 0
+flag_der = 0  # Si esta en cero agrego chirp a la derecha
+for i in range(0, 10, 1):
+    chirps_a_sumar = int(ancho[1000:i]/delta_t)
+    if (chirps_a_sumar == 0):
+        continue
+    else:
+        if cant_chirp_anterior == chirps_a_sumar:
+            continue
+        else:
+            for i in range(chirps_a_sumar, 0, -1):
+                chirp_final[i] =
+
+        cant_chirp_anterior = chirps_a_sumar
+
+
+
+
+
+
+
+
+
+
+
 def plot_frec(x, t, index, label):
+    """index es un parametro de la evolucion del chirp en el tiempo"""
     asd = x[5000*index:5000*index+4096]
     zxc = fftpack.fft(asd)
-    N = len(asd)
-    xf = np.linspace(0.0, 1.0/2.0*f_sample, N/2)
-    plt.plot(xf, 2.0/N * np.abs(zxc[:N//2]), label=label)
+    n = len(asd)
+    xf = np.linspace(0.0, int(1.0/2.0*f_sample), int(n/2))
+    plt.plot(xf, 2.0/n * np.abs(zxc[:int(n//2)]), label=label)
 
+
+
+def rapido(desfase, index):
+    """plot rapido del chirp con desfase"""
+    temp = chirp(duracion, N, DM_index, frec_i, frec_fin, desfase)
+    xi = temp[3]
+    ti = temp[2]
+    plot_frec(xi, ti, index, 'rapido %d' % desfase)
 
 
 """
@@ -80,13 +129,15 @@ while(i < 9):
 plt.show()
 plt.legend
 
+
 # espectrograma hechizo, falta ver a que tiempo corresponde cada iteracion
+i = 0
 matrix = np.zeros([460, 2048])
 while(i < 460):
     asd = x[100*i:100*i+4096]
     zxc = fftpack.fft(asd)
-    N = len(asd)
-    matrix[i, :] = 2.0/N * np.abs(zxc[:N//2])
+    n = len(asd)
+    matrix[i, :] = 2.0/n * np.abs(zxc[:n//2])
     i = i + 1
 plt.figure()
 plt.imshow(np.transpose(matrix[:, :150]), origin='lower')
@@ -97,5 +148,4 @@ plt.show()
 sigma_test = np.zeros(98)
 for i in range(0, 98, 1):
     sigma_test[i] = evol_width(a, b, 0.5, 3, t[500*i], index_width)
-
 """
