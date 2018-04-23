@@ -48,6 +48,11 @@ def evol_width(a, b, width_i, width_f, index_width):
     return ancho
 
 
+def gaussian(sigma, t, mu):
+    out = np.exp(-(t-mu)**2/(2*sigma**2))
+    return out
+
+
 prueba = chirp(duracion, N, DM_index, frec_i, frec_fin, 0)
 a = prueba[0]
 b = prueba[1]
@@ -61,20 +66,68 @@ ancho = evol_width(a, b, width_i, width_fin, index_width)
 """Testing de la evolucion del ancho (dps hay q convertirlo en una funcion)
 La idea es concatenar chirps desfasados talque cumplan los requerimientos del
 ancho, esto depende fuertemente de la velocidad de adquisiscion del ADC
-y esta dado por el delta_t con que se esta trabajando en el script...(OJO PIOJO
+y esta dado por el delta_f(q depende del numero de puntos de la ventana en que
+se haga la fft) con que se esta trabajando en el script...(OJO PIOJO
 que sino puede darse que el ADC cache que hay zonas espaciadas y no lo mida como
-continuo)...Importante: los coeficientes q acompañan a los chirps estan sacados
+continuo)...Importante: los coeficientes q acompanan a los chirps estan sacados
 de una distribucion gaussiana centrada en el peak y con
 sigma= ancho/(2sqrt(2ln(2)))
 """
 # Para plot_frec(x,t,0,'asd')  w=0.021 aprox, y delta_f=0.015
 
 
-
 delta_t = duracion*1.0/N
-cant_chirp_anterior = 0
-flag_der = 0  # Si esta en cero agrego chirp a la derecha
-for i in range(0, 10, 1):
+delta_f = 0.015  # esto debiese ser una variable
+sigma = ancho/(2*np.sqrt(2*np.log(2)))
+chirps_a_agregar = int(np.around(np.max(ancho)/delta_f))
+cant_chirps_usada = len(t[np.int(len(t)/2)-np.int(chirps_a_agregar/2):
+                          np.int(len(t)/2)+np.int(chirps_a_agregar/2)])
+coeficientes = np.zeros([len(t), cant_chirps_usada])
+
+chirps = np.zeros([cant_chirps_usada, len(t)])
+desfase_min = -delta_f * cant_chirps_usada/2
+final = np.zeros(len(t))
+intento2 = np.zeros([cant_chirps_usada, len(t)])
+# iteracion para crear los chirps desfasados, 1er indice desfase, 2do indice
+# el valor temporal
+test = np.zeros(len(t))
+
+
+# iteracion para encontrar coeficientes
+# el 1er index es el tiempo en que se calculan los coef, el 2do es el valor del
+# coef del chirp desfasado.
+for i in range(0, len(t), 1):
+    coeficientes[i, :] = gaussian(sigma[i], t[np.int(len(t)/2)-np.int(chirps_a_agregar/2):
+                                              np.int(len(t)/2)+np.int(chirps_a_agregar/2)],
+                                  t[np.int(len(t)/2)])
+
+for i in range(0, cant_chirps_usada):
+    chirps[i, :] = chirp(duracion, N, DM_index, frec_i, frec_fin, desfase_min +
+                         delta_f*i)[3]
+    intento2[i, :] = chirps[i, :]*coeficientes[:, i]
+    # calculo de cada valor temporal
+#    for j in range(0, cant_chirps_usada, 1):
+#        final[i] = final[i] + coeficientes[i, j] * chirps[j, i] #parece q esto no esta funcando
+
+
+
+
+
+
+
+#    dist_normal = gaussian(sigma[i], t, t[np.int(len(t)/2)])
+#    coeficientes[i, :] = dist_normal[np.int(len(t)/2)-np.int(chirps_a_agregar/2):
+#                                     np.int(len(t)/2)+np.int(chirps_a_agregar/2)]
+
+
+
+
+
+
+
+
+
+"""for i in range(0, 10, 1):
     chirps_a_sumar = int(ancho[1000:i]/delta_t)
     if (chirps_a_sumar == 0):
         continue
@@ -86,12 +139,14 @@ for i in range(0, 10, 1):
                 chirp_final[i] =
 
         cant_chirp_anterior = chirps_a_sumar
+"""
 
 
-
-
-
-
+# prueba del ancho
+prueba_ancho = np.zeros([5000, 5000])
+for i in range(0, 4999, 1):
+    prueba_ancho[i, :] = gaussian(ancho[i*10], t[0:5000], 40)
+plt.plot(t[0:5000], prueba_ancho[4999, :])
 
 
 

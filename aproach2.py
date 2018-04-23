@@ -72,7 +72,7 @@ plt.plot(peak_de_frec(a, b, t))
 
 # evolucion de width
 
-"""
+
 def evol_width(width_i, width_f, t, index_width):
     Entrega distintos valores de width dependiendo del tiempo que se le
     ingrese. Usa que w = c((a/(t-b))**(1/DM_ind))**index_wifth + d
@@ -95,5 +95,4 @@ def gaussian(sigma, t, mu):
 # prueba evolucion temporal
 for i in range(0, 100, 2):
     sigma_test = evol_width(0.5, 3, t[5000*i])
-    gaussian(sigma_test,)
-"""
+    gaussian(sigma_test, t, 0)/max(sigma_test, t, 0)
