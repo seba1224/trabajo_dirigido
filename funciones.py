@@ -6,7 +6,7 @@ import ipdb
 
 
 """valores de prueba"""
-np.random.seed(10)
+# np.random.seed(10)
 duracion = 800
 N = 50000
 DM_index = 2.0
@@ -17,7 +17,7 @@ width_fin = 3
 index_width = 4
 
 
-def chirp(duracion, N, DM_index, frec_i, frec_fin, desfase):
+def chirp(duracion, N, DM_index, frec_i, frec_fin, desfase, desfase2):
     """"Entrega un (t,x) deonde t y x son de un  chirp que varia su frecuencia
     en el tiempo, suponiendo que los FRB siguen t=a/(frec**DM)+b"""
     a = duracion/(1.0/frec_fin**DM_index-1.0/frec_i**DM_index)
@@ -30,7 +30,7 @@ def chirp(duracion, N, DM_index, frec_i, frec_fin, desfase):
     phi = 2*np.pi*np.cumsum(frec*duracion/N)
     # plt.plot(1/(2*np.pi)*np.gradient(phi, duracion/N)) # mustra la variacion de frec
     # del chirp
-    x = np.sin(phi + desfase*t)
+    x = np.sin(phi + desfase*t+desfase2)
     return (a, b, t, x)
 
 
@@ -53,7 +53,7 @@ def gaussian(sigma, t, mu):
     return out
 
 
-prueba = chirp(duracion, N, DM_index, frec_i, frec_fin, 0)
+prueba = chirp(duracion, N, DM_index, frec_i, frec_fin, 0, 2*np.pi*np.random.random())
 a = prueba[0]
 b = prueba[1]
 t = prueba[2]
@@ -103,8 +103,9 @@ for i in range(0, len(t), 1):
 
 for i in range(0, cant_chirps_usada):
     chirps[i, :] = chirp(duracion, N, DM_index, frec_i, frec_fin, desfase_min +
-                         delta_f*i)[3]
+                         delta_f*i, np.random.random()*2*np.pi)[3]
     intento2[i, :] = chirps[i, :]*coeficientes[:, i]
+
     # calculo de cada valor temporal
 #    for j in range(0, cant_chirps_usada, 1):
 #        final[i] = final[i] + coeficientes[i, j] * chirps[j, i] #parece q esto no esta funcando
@@ -184,21 +185,26 @@ while(i < 9):
 plt.show()
 plt.legend
 
-
+"""
 # espectrograma hechizo, falta ver a que tiempo corresponde cada iteracion
-i = 0
-matrix = np.zeros([460, 2048])
-while(i < 460):
-    asd = x[100*i:100*i+4096]
-    zxc = fftpack.fft(asd)
-    n = len(asd)
-    matrix[i, :] = 2.0/n * np.abs(zxc[:n//2])
-    i = i + 1
-plt.figure()
-plt.imshow(np.transpose(matrix[:, :150]), origin='lower')
-plt.show()
 
 
+def espectrograma(input):
+    i = 0
+    matrix = np.zeros([460, 2048])
+    while(i < 460):
+        # asd = x[100*i:100*i+4096]
+        asd = input[50, 100*i:100*i+4096]
+        zxc = fftpack.fft(asd)
+        n = len(asd)
+        matrix[i, :] = 2.0/n * np.abs(zxc[:n//2])
+        i = i + 1
+        plt.figure()
+        plt.imshow(np.transpose(matrix[:, :150]), origin='lower')
+        plt.show()
+
+
+"""
 # prueba evolucion temporal
 sigma_test = np.zeros(98)
 for i in range(0, 98, 1):
