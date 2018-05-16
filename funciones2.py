@@ -8,7 +8,7 @@ import ipdb
 """valores de prueba"""
 # np.random.seed(10)
 duracion = 800
-N = 2048
+N = 50000
 DM_index = 2.0
 frec_i = 1.5   # ojo q si f_i y f_fin no son floats no funca
 frec_fin = 1.2
@@ -77,7 +77,7 @@ sigma= ancho/(2sqrt(2ln(2)))
 
 
 delta_t = duracion*1.0/N
-delta_f = 0.02 # esto debiese ser una variable
+delta_f = 0.05 # esto debiese ser una variable
 sigma = ancho/(2*np.sqrt(2*np.log(2)))
 chirps_a_agregar = int(np.around(np.max(ancho)/delta_f))
 cant_chirps_usada = len(t[np.int(len(t)/2)-np.int(chirps_a_agregar/2):

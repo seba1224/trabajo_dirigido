@@ -54,3 +54,4 @@ for i in range(0, len(t)):
 
 
 plt.imshow(matrix, origin='bottom')  # aca el x es t y el y es frec (no cache como arreglar los ejes)
+plt.show()
