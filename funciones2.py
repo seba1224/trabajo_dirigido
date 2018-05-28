@@ -213,9 +213,9 @@ def espectrograma(input):
         n = len(asd)
         matrix[i, :] = 2.0/n * np.abs(zxc[:n//2])
         i = i + 1
-        plt.figure()
-        plt.imshow(np.transpose(matrix[:, :150]), origin='lower')
-        plt.show()
+    plt.figure()
+    plt.imshow(np.transpose(matrix[:, :150]), origin='lower')
+    plt.show()
 
 
 """

@@ -194,14 +194,15 @@ def espectrograma(input):
     matrix = np.zeros([460, 2048])
     while(i < 460):
         # asd = x[100*i:100*i+4096]
+        print i
         asd = input[50, 100*i:100*i+4096]
         zxc = fftpack.fft(asd)
         n = len(asd)
         matrix[i, :] = 2.0/n * np.abs(zxc[:n//2])
         i = i + 1
-        plt.figure()
-        plt.imshow(np.transpose(matrix[:, :150]), origin='lower')
-        plt.show()
+    plt.figure()
+    plt.imshow(np.transpose(matrix[:, :150]), origin='lower')
+    plt.show()
 
 
 """
